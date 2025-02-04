@@ -12,6 +12,7 @@ const tags = [
   "frontend",
   "backend",
   "database",
+  "devops",
   "maintenance",
   "bugfix",
   "feature",
@@ -54,7 +55,7 @@ export async function formatCommit(
     mode: "json",
     maxRetries: 3,
     model: ollama(model),
-    prompt: `Based on the following git diff, provide a structured answer. use original author, sha and message fields. use only provided enums when possible \n\n\`\`\`\n${commit}\n\`\`\``,
+    prompt: `Based on the following git diff, provide a structured answer using FRENCH ONLY. use original author, sha and message fields. use only provided enums when possible \n\n\`\`\`\n${commit}\n\`\`\``,
     schema: commitOutputSchema,
   });
   return result.object;
