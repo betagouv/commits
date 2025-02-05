@@ -32,7 +32,7 @@ function writeCommit(
       message: commit.message || "",
       sha: commit.sha || "",
       url: `https://github.com/${githubRepoPath}/commit/${commit.sha}`,
-      diff: diffBuffer,
+      diff: diffBuffer.slice(0, 1000).replace(/[\u{0080}-\u{FFFF}]/gu, ""),
     };
     const jsonCommit = JSON.stringify(commitInfo, null, 2);
     if (!isFirst) {
@@ -55,7 +55,8 @@ export function extractRepoCommits(repoPath: string, outputFile: string) {
     "log",
     "-n",
     "500",
-    "--pretty=format:%x1e%H%x1f%an%x1f%ad%x1f%s",
+    "--no-merges",
+    "--pretty=format:|||||%H_____%an_____%ad_____%s",
     "-p",
   ]);
 
@@ -82,7 +83,10 @@ export function extractRepoCommits(repoPath: string, outputFile: string) {
   let diffBuffer = "";
 
   rl.on("line", (line) => {
-    if (line.startsWith("\x1e")) {
+    //console.log("line", line);
+    //console.log("diffBuffer", diffBuffer);
+    const cleanLine = line.replaceAll("\ufffd", "");
+    if (cleanLine.startsWith("|||||")) {
       isFirst = writeCommit(
         outputStream,
         currentCommit,
@@ -91,7 +95,7 @@ export function extractRepoCommits(repoPath: string, outputFile: string) {
         githuRepoPath
       );
       diffBuffer = "";
-      const parts = line.slice(1).split("\x1f");
+      const parts = cleanLine.slice(5).split("_____");
       currentCommit = {
         sha: parts[0],
         author: parts[1],

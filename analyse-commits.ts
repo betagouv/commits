@@ -6,6 +6,16 @@ import { parser } from "stream-json";
 import { streamArray } from "stream-json/streamers/StreamArray";
 import { Transform } from "node:stream";
 import { formatCommit } from "./format-commit";
+import fs from "node:fs/promises";
+
+async function exists(f) {
+  try {
+    await fs.stat(f);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Traite les commits lus en streaming depuis un fichier JSON.
@@ -17,7 +27,26 @@ export async function analyseCommits(
 ): Promise<void> {
   // Création des streams de lecture et d'écriture
   const readStream = createReadStream(inputFile);
-  const writeStream = createWriteStream(outputFile);
+  const outputExists = await exists(outputFile);
+  const existingCommits = [];
+  if (outputExists) {
+    const existingResult = (await fs.readFile(outputFile)).toString();
+    try {
+      existingCommits.push(...JSON.parse(existingResult));
+    } catch (e) {
+      try {
+        existingCommits.push(...JSON.parse(existingResult + "]"));
+      } catch (e) {
+        //throw e;
+        //existingCommits = [];
+      }
+      // invalid JSON
+      console.log("e", e);
+    }
+  }
+
+  const streamOutputFile = outputFile;
+  const writeStream = createWriteStream(streamOutputFile);
 
   // On décompose le JSON grâce à stream-json.
   // "parser" lit le JSON, "streamArray" se place sur le tableau.
@@ -35,10 +64,20 @@ Date: ${commit.date}
 
 ${commit.message}
 
-${commit.diff.slice(0, 1000)}`; // todo: resumé ?
+${commit.diff}`; // todo: resumé ?
 
-        const result = await formatCommit("qwen2.5", fullDiff);
-        callback(null, result);
+        //  ensure we dont have it already
+        const existingCommit = existingCommits.find(
+          (c) => c.sha === commit.sha
+        );
+        if (!existingCommit) {
+          console.log("NO skip", commit.sha);
+          const result = await formatCommit("qwen2.5", fullDiff);
+          callback(null, result);
+        } else {
+          console.log("skip", commit.sha);
+          callback(null, existingCommit);
+        }
       } catch (error) {
         callback(error);
       }

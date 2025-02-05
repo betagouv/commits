@@ -19,8 +19,10 @@ const tags = [
   "map",
   "search",
   "ia",
+  "data-science",
   "api",
   "documentation",
+  "tests",
 ] as const;
 
 const languages = [
@@ -37,6 +39,7 @@ const languages = [
 const commitOutputSchema = z.object({
   author: z.string().describe("Original commit author"),
   sha: z.string().describe("Original commit sha"),
+  date: z.string().describe("Original commit date"),
   message: z.string().describe("Original commit message"),
   description: z.string().describe("Overall description of the commit"),
   tags: z
