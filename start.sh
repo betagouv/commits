@@ -17,7 +17,7 @@ done
 # todo: exclude dirs
 for dir in ./repos/*/*; do
     [ -d "$dir" ] && echo "Dossier : $dir"
-    ./dump-repo-commits.ts "$dir" "$dir/commits.json"
+    #./dump-repo-commits.ts "$dir" "$dir/commits.json"
 done
 
 # analyse all commits files and create commits-analysed.json

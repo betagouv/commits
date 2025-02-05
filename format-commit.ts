@@ -37,10 +37,6 @@ const languages = [
 ] as const;
 
 const commitOutputSchema = z.object({
-  author: z.string().describe("Original commit author"),
-  sha: z.string().describe("Original commit sha"),
-  date: z.string().describe("Original commit date"),
-  message: z.string().describe("Original commit message"),
   description: z.string().describe("Overall description of the commit"),
   tags: z
     .array(z.union([z.string().min(1), z.enum(tags)]))
@@ -58,7 +54,7 @@ export async function formatCommit(
     mode: "json",
     maxRetries: 3,
     model: ollama(model),
-    prompt: `Based on the following git diff, provide a structured answer using FRENCH ONLY. use original author, sha and message fields. use only provided enums when possible \n\n\`\`\`\n${commit}\n\`\`\``,
+    prompt: `Based on the following git diff, provide a structured answer using FRENCH ONLY. use only provided enums when possible \n\n\`\`\`\n${commit}\n\`\`\``,
     schema: commitOutputSchema,
   });
   return result.object;

@@ -6,7 +6,7 @@ import { parser } from "stream-json";
 import { streamArray } from "stream-json/streamers/StreamArray";
 import { Transform } from "node:stream";
 import { formatCommit } from "./format-commit";
-import fs from "node:fs/promises";
+import * as fs from "fs/promises";
 
 async function exists(f) {
   try {
@@ -23,7 +23,8 @@ async function exists(f) {
  */
 export async function analyseCommits(
   inputFile: string,
-  outputFile: string
+  outputFile: string,
+  repositoryName: string
 ): Promise<void> {
   // Création des streams de lecture et d'écriture
   const readStream = createReadStream(inputFile);
@@ -71,11 +72,26 @@ ${commit.diff}`; // todo: resumé ?
           (c) => c.sha === commit.sha
         );
         if (!existingCommit) {
-          console.log("NO skip", commit.sha);
-          const result = await formatCommit("qwen2.5", fullDiff);
-          callback(null, result);
+          try {
+            const result = await formatCommit("qwen2.5", fullDiff);
+            callback(null, {
+              ...result,
+              repository: repositoryName,
+              author: commit.author,
+              message: repositoryName,
+              sha: commit.sha,
+              date: commit.date,
+              url: commit.url,
+            });
+          } catch (e) {
+            console.log(
+              `SKIP analyse: bad object reiceved for ${commit.sha} - ${inputFile}`
+            );
+            callback(null, null);
+            //callback(new Error(`bad object reiceved for ${commit.sha}`));
+          }
         } else {
-          console.log("skip", commit.sha);
+          console.log("skip analyse: existing", commit.sha);
           callback(null, existingCommit);
         }
       } catch (error) {
@@ -121,7 +137,7 @@ ${commit.diff}`; // todo: resumé ?
   );
 }
 
-// // // when script executes directly
+// when script executes directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   if (process.argv.length < 4) {
     throw new Error("USAGE: script.ts /path/to/commits.json output.json");
@@ -129,7 +145,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const inputFile = process.argv[process.argv.length - 2];
   const outputFile = process.argv[process.argv.length - 1];
 
-  analyseCommits(inputFile, outputFile)
+  analyseCommits(inputFile, outputFile, "plip/plop")
     .then(() => console.log("Traitement terminé avec succès"))
     .catch((err) => {
       console.error("Erreur lors du traitement :", err);

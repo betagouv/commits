@@ -22,7 +22,7 @@ function writeCommit(
   commit: Partial<CommitInfo>,
   diffBuffer: string,
   isFirst: boolean,
-  githubRepoPath: string
+  commitUrlPrefix: string
 ): boolean {
   if (commit.sha) {
     const commitInfo: CommitInfo = {
@@ -31,7 +31,7 @@ function writeCommit(
       author: commit.author || "",
       message: commit.message || "",
       sha: commit.sha || "",
-      url: `https://github.com/${githubRepoPath}/commit/${commit.sha}`,
+      url: commitUrlPrefix && `${commitUrlPrefix}/${commit.sha}`,
       diff: diffBuffer.slice(0, 1000).replace(/[\u{0080}-\u{FFFF}]/gu, ""),
     };
     const jsonCommit = JSON.stringify(commitInfo, null, 2);
@@ -48,81 +48,83 @@ function writeCommit(
  * Cette fonction stream les commits d'un dépôt Git et les écrit progressivement
  * dans un fichier JSON.
  */
-export function extractRepoCommits(repoPath: string, outputFile: string) {
+export function extractRepoCommits(
+  repoPath: string,
+  outputFile: string,
+  commitUrlPrefix?: string | undefined
+) {
   const gitLog = spawn("git", [
     "-C",
     repoPath,
     "log",
     "-n",
-    "500",
+    "100",
     "--no-merges",
     "--pretty=format:|||||%H_____%an_____%ad_____%s",
     "-p",
   ]);
 
-  // org/repo
-  const githuRepoPath = repoPath
-    .split("/")
-    .reverse()
-    .slice(0, 2)
-    .reverse()
-    .join("/");
-
   const rl = readline.createInterface({
     input: gitLog.stdout,
     terminal: false,
   });
+
   const outputStream = fs.createWriteStream(outputFile, { encoding: "utf8" });
 
   outputStream.write("[\n");
 
+  const defaultRepository = repoPath.split("/").slice(-2).join("/") || "";
+
   let isFirst = true;
   let currentCommit: Partial<CommitInfo> = {
-    repository: repoPath.split("/").pop() || "",
+    repository: defaultRepository,
   };
+
   let diffBuffer = "";
 
-  rl.on("line", (line) => {
-    //console.log("line", line);
-    //console.log("diffBuffer", diffBuffer);
-    const cleanLine = line.replaceAll("\ufffd", "");
-    if (cleanLine.startsWith("|||||")) {
+  return new Promise(async (resolve, reject) => {
+    rl.on("line", (line) => {
+      const cleanLine = line.replaceAll("\ufffd", "");
+      if (cleanLine.startsWith("|||||")) {
+        isFirst = writeCommit(
+          outputStream,
+          currentCommit,
+          diffBuffer,
+          isFirst,
+          commitUrlPrefix
+        );
+        diffBuffer = "";
+        const parts = cleanLine.slice(5).split("_____");
+        currentCommit = {
+          sha: parts[0],
+          author: parts[1],
+          date: parts[2],
+          message: parts[3],
+          repository: defaultRepository,
+        };
+      } else {
+        diffBuffer += line + "\n";
+      }
+    });
+
+    rl.on("close", () => {
       isFirst = writeCommit(
         outputStream,
         currentCommit,
         diffBuffer,
         isFirst,
-        githuRepoPath
+        commitUrlPrefix
       );
-      diffBuffer = "";
-      const parts = cleanLine.slice(5).split("_____");
-      currentCommit = {
-        sha: parts[0],
-        author: parts[1],
-        date: parts[2],
-        message: parts[3],
-        repository: repoPath.split("/").pop() || "",
-      };
-    } else {
-      diffBuffer += line + "\n";
-    }
-  });
+      outputStream.write("\n]\n");
+      outputStream.end();
+      console.log("Export terminé vers", outputFile);
+      resolve(outputFile);
+    });
 
-  rl.on("close", () => {
-    isFirst = writeCommit(
-      outputStream,
-      currentCommit,
-      diffBuffer,
-      isFirst,
-      githuRepoPath
-    );
-    outputStream.write("\n]\n");
-    outputStream.end();
-    console.log("Export terminé vers", outputFile);
-  });
-
-  gitLog.on("error", (error) => {
-    console.error("Erreur lors de l'exécution de git log :", error);
+    gitLog.on("error", (error) => {
+      console.error("Erreur lors de l'exécution de git log :", error);
+      reject(error);
+    });
   });
 }
 
@@ -134,5 +136,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const repo = process.argv[process.argv.length - 2];
   const output = process.argv[process.argv.length - 1];
   console.log("repo", repo);
-  extractRepoCommits(repo, output);
+  extractRepoCommits(repo, output).then(console.log);
 }
