@@ -25,4 +25,7 @@ const createSqliteFromCommits = async (rootDir: string) => {
   console.log("done");
 };
 
-createSqliteFromCommits("./.repos");
+// when script executes directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  createSqliteFromCommits("./.repos");
+}

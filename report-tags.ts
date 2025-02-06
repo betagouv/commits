@@ -11,7 +11,7 @@ const tagsQuery = `
 WITH user_tag_count AS (
   -- On décompose le tableau JSON en lignes, et on compte les occurrences par utilisateur et par tag.
   SELECT 
-    author AS user_id,
+    author AS author,
     json_each.value AS tag,
     COUNT(*) AS cnt
   FROM commits, json_each(tags)
@@ -21,7 +21,7 @@ ranked AS (
   -- Pour chaque tag, on classe les utilisateurs par nombre d'occurrences (du plus grand au plus petit)
   SELECT 
     tag,
-    user_id,
+    author,
     cnt,
     RANK() OVER (PARTITION BY tag ORDER BY cnt DESC) AS rnk
   FROM user_tag_count
@@ -29,11 +29,11 @@ ranked AS (
 -- On récupère, pour chaque tag, les utilisateurs ayant le rang 1 (c'est-à-dire le(s) plus nombreux)
 SELECT 
   lower(tag) as tag,
-  user_id,
-  group_concat(user_id) AS author,
+  author,
+  group_concat(author) AS author2,
   cnt
 FROM ranked
-GROUP BY tag, user_id order by tag,cnt desc;
+GROUP BY tag, author order by tag,cnt desc,author;
 `;
 
 export const reportTags = async (inputSqlite) => {
