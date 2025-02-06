@@ -4,6 +4,7 @@ import * as fs from "node:fs/promises";
 import { extractRepoCommits } from "./dump-repo-commits";
 import { analyseCommits } from "./analyse-commits";
 import { reportLatestChanges } from "./report-latest-changes";
+import { reportTags } from "./report-tags";
 import { createSqlLite } from "./create-sqlite";
 import { clone } from "./git-clone";
 
@@ -43,13 +44,18 @@ const runForRepo = async (url: string) => {
   await createSqlLite(outputAnalysedCommitsFile, outputDir);
   console.log(`Export terminé vers ${outputDir}/commits.sqlite`);
 
-  // create report
+  // create reports
   const reportLatestPath = `${outputDir}/report-latest.md`;
   const commitsContent = await fs.readFile(outputAnalysedCommitsFile);
   const commits = JSON.parse(commitsContent.toString());
   const latest = await reportLatestChanges(commits, repositoryName);
   await fs.writeFile(reportLatestPath, latest);
   console.log(`Export terminé vers ${reportLatestPath}`);
+
+  const reportTagsPath = `${outputDir}/report-tags.md`;
+  const tags = await reportTags(`${outputDir}/commits.sqlite`);
+  await fs.writeFile(reportTagsPath, tags);
+  console.log(`Export terminé vers ${reportTagsPath}`);
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
