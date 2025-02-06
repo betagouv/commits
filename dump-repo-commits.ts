@@ -117,7 +117,7 @@ export function extractRepoCommits(
       );
       outputStream.write("\n]\n");
       outputStream.end();
-      console.log("Export terminé vers", outputFile);
+      //console.log("Export terminé vers", outputFile);
       resolve(outputFile);
     });
 

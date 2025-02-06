@@ -73,14 +73,15 @@ ${commit.diff}`; // todo: resumé ?
         );
         if (!existingCommit) {
           try {
+            console.log(`analyse: ${commit.sha}`);
             const result = await formatCommit("qwen2.5", fullDiff);
             callback(null, {
               ...result,
               repository: repositoryName,
               author: commit.author,
-              message: repositoryName,
+              message: commit.message,
               sha: commit.sha,
-              date: commit.date,
+              date: new Date(commit.date).toISOString(),
               url: commit.url,
             });
           } catch (e) {

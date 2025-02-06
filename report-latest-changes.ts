@@ -18,26 +18,19 @@ const reportOutputSchema = z.object({
     .optional(),
 });
 
-export async function formatChanges(
-  model: Parameters<typeof ollama>[0],
-  input: string
-) {
+export async function formatChanges(input: string) {
   const prompt = `Based on the below changes, provide a structured answer using FRENCH ONLY.\n\n\`\`\`\n${input}\n\`\`\``;
   const result = await generateObject({
     mode: "json",
     maxRetries: 20,
-    model: ollama(model),
+    model: ollama("qwen2.5big"),
     prompt,
     schema: reportOutputSchema,
   });
   return result.object;
 }
 
-export async function reportLatestChanges(
-  model: Parameters<typeof ollama>[0],
-  input: any,
-  title
-) {
+export async function reportLatestChanges(input: any, title) {
   //console.log("input", input);
   const changes = input
     .slice(0, 50)
@@ -50,7 +43,7 @@ export async function reportLatestChanges(
     })
     .join("\n");
 
-  const obj = await formatChanges(model, changes);
+  const obj = await formatChanges(changes);
 
   return `# ${title} 
 
@@ -76,7 +69,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.readFile(process.argv[process.argv.length - 1])
     .then((content) => {
       const commits = JSON.parse(content.toString());
-      return reportLatestChanges("qwen2.5big", commits, "project-x");
+      return reportLatestChanges(commits, "project-x");
     })
     .then((report) => {
       console.log(report);

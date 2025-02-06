@@ -21,16 +21,14 @@ This will fetch the repo and use your local ollama to produce files in `.repos/d
 
 ## Features
 
+- progessive and resumeable
 - generate full SQLite
 - generete some basic reports
-- progessive and resumeable
 
 ## Limitations
 
 - 50 most recently updated project per organisation
 - 100 last commit per repo
-
-With time you'll get more and more commits
 
 ## Todo
 

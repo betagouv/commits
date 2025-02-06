@@ -34,6 +34,9 @@ const languages = [
   "PHP",
   "HTML",
   "Markdown",
+  "Vue.js",
+  "React",
+  "Angular",
 ] as const;
 
 const commitOutputSchema = z.object({
