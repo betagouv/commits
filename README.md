@@ -8,7 +8,7 @@ Extract structured data from a GIT repository with Ollama
 graph TD
 
 Clone[Clone repo]-->Commits[Extract commits]
-Commits-->Analyse[Analyse commits LLM]
+Commits-->Analyse[LLM commit analyser]
 Analyse-->JSON
 JSON-->SQLite
 ```
@@ -32,6 +32,7 @@ This will fetch the repo and use your local ollama to produce files in `.repos/d
 
 ## Todo
 
+- static demo app
 - GitLab support
 - parquet export
 - openAI API compat

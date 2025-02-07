@@ -30,16 +30,16 @@ export async function formatChanges(input: string) {
   return result.object;
 }
 
+const smallFrDate = (strDate: string) =>
+  new Date(strDate).toISOString().slice(0, 10).split("-").reverse().join("/");
+
 export async function reportLatestChanges(input: any, title) {
   //console.log("input", input);
   const changes = input
     .slice(0, 50)
     .map((commit) => {
       //console.log(commit);
-      return ` - ${new Date(commit.date).toISOString().slice(0, 10)} : par ${commit.author} : [${commit.description}](${commit.url})
-  tags: ${commit.tags.join(", ")}
-  languages: ${commit.languages.join(", ")}
-  `;
+      return ` - ${smallFrDate(commit.date)} : par ${commit.author} (${commit.tags.join(", ")}): [${commit.description}](${commit.url})`;
     })
     .join("\n");
 
