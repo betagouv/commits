@@ -22,6 +22,11 @@ async function exists(f) {
   }
 }
 
+//
+// todo: this process wipes old commits from commits-analysed.json output
+// should we also store older commits there ?
+//
+
 /**
  * Traite les commits lus en streaming depuis un fichier JSON.
  * Pour chaque commit, on construit le fullDiff et on appelle formatCommit.

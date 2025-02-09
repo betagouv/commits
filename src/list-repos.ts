@@ -13,6 +13,9 @@ const orgs = [
   "etalab-ia",
   "datagouv",
   "demarches-simplifiees",
+  "codegouvfr",
+  "gouvernementfr",
+  "disic",
 ];
 
 const repos = pAll(
