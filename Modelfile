@@ -1,3 +1,5 @@
 FROM qwen2.5:7b
 
+# higher context
+
 PARAMETER num_ctx 32768

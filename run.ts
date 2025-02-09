@@ -1,14 +1,15 @@
 #! /usr/bin/env -S pnpm tsx
 
 import * as fs from "node:fs/promises";
-import { extractRepoCommits } from "./dump-repo-commits";
-import { analyseCommits } from "./analyse-commits";
-import { reportLatestChanges } from "./report-latest-changes";
-import { reportTags } from "./report-tags";
-import { createSqlLite } from "./create-sqlite";
-import { clone } from "./git-clone";
 
-const CACHE_DIR = ".repos";
+import { extractRepoCommits } from "./src/dump-repo-commits";
+import { analyseCommits } from "./src/analyse-commits";
+import { reportLatestChanges } from "./src/reports/report-latest-changes";
+import { reportTags } from "./src/reports/report-tags";
+import { createSqlLite } from "./src/create-sqlite";
+import { clone } from "./src/git-clone";
+
+const CACHE_DIR = "./repos";
 
 const runForRepo = async (url: string) => {
   const parts = url.split("/");
@@ -56,6 +57,8 @@ const runForRepo = async (url: string) => {
   const tags = await reportTags(`${outputDir}/commits.sqlite`);
   await fs.writeFile(reportTagsPath, tags);
   console.log(`Export terminé vers ${reportTagsPath}`);
+
+  // export outputDir
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
