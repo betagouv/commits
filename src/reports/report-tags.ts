@@ -25,6 +25,7 @@ ranked AS (
     cnt,
     RANK() OVER (PARTITION BY tag ORDER BY cnt DESC) AS rnk
   FROM user_tag_count
+  WHERE cnt > 1
 )
 -- On récupère, pour chaque tag, les utilisateurs ayant le rang 1 (c'est-à-dire le(s) plus nombreux)
 SELECT 
