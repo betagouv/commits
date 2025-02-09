@@ -5,6 +5,8 @@ import { ollama } from "ollama-ai-provider";
 import { z } from "zod";
 import * as fs from "fs/promises";
 
+const LLM_MODEL = process.env.LLM_MODEL || "qwen2.5big";
+
 const reportOutputSchema = z.object({
   period: z.string().describe("Period of all the changes"),
   overall: z.string().describe("Summary of overall changes by the team"),
@@ -27,7 +29,8 @@ export async function formatChanges(input: string) {
   const result = await generateObject({
     mode: "json",
     maxRetries: 20,
-    model: ollama("qwen2.5big"),
+
+    model: ollama(LLM_MODEL),
     prompt,
     schema: reportOutputSchema,
   });

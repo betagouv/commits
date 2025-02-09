@@ -11,6 +11,8 @@ import * as fs from "fs/promises";
 
 import { formatCommit } from "./format-commit";
 
+const LLM_MODEL = process.env.LLM_MODEL || "qwen2.5";
+
 async function exists(f) {
   try {
     await fs.stat(f);
@@ -77,7 +79,7 @@ ${commit.diff}`; // todo: resumé ?
         if (!existingCommit) {
           try {
             console.log(`analyse: ${commit.sha}`);
-            const result = await formatCommit("qwen2.5", fullDiff);
+            const result = await formatCommit(LLM_MODEL, fullDiff);
             callback(null, {
               ...result,
               repository: repositoryName,

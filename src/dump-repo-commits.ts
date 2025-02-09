@@ -6,6 +6,8 @@ import * as fs from "fs";
 
 // use streams
 
+const MAX_COMMITS_TO_EXTRACT = 100;
+
 interface CommitInfo {
   date: string;
   repository: string;
@@ -34,7 +36,7 @@ function writeCommit(
       message: commit.message || "",
       sha: commit.sha || "",
       url: commitUrlPrefix && `${commitUrlPrefix}/${commit.sha}`,
-      diff: diffBuffer.slice(0, 1000).replace(/[\u{0080}-\u{FFFF}]/gu, ""),
+      diff: diffBuffer.slice(0, 1000).replace(/[\u{0080}-\u{FFFF}]/gu, ""), // todo: better
     };
     const jsonCommit = JSON.stringify(commitInfo, null, 2);
     if (!isFirst) {
@@ -60,7 +62,7 @@ export function extractRepoCommits(
     repoPath,
     "log",
     "-n",
-    "50",
+    `${MAX_COMMITS_TO_EXTRACT}`,
     "--no-merges",
     "--pretty=format:|||||%H_____%an_____%ad_____%s",
     "-p",

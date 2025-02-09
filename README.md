@@ -6,7 +6,7 @@ Extract structured data from a GIT repositories with Ollama and combine multiple
 
 The sample [./commits.sqlite](./commits.sqlite) covers ~700 repositories, ~30k commits overs ~12 organisations.
 
-This could be used to generate changelogs, dig into project activities, mix'n'match projects and authors.
+This could be used to generate changelogs, dig into project activities, mix'n'match projects and authors. see [./examples](./examples)
 
 ## Repo pipeline (run.ts)
 
@@ -24,15 +24,26 @@ SQLite-->Reports.md
 
 You need `node@20+` to run the scripts
 
-Clone the repo and run `yarn` to install dependencies then :
+```sh
+# Clone the repo
+git clone https://github.com/betagouv/commits && cd commits
 
-`./run.ts https://github.com/datagouv/udata-front`
+# install dependencies
+yarn
+
+# run the pipeline for this GIT repo
+./run.ts https://github.com/datagouv/udata-front
+```
 
 This will fetch the repo and use your local ollama to produce files in `./repos/datagouv/udata-front/repo-output`
 
-execute `./src/create-full-sqlite.ts` to compile all data in `./commits.sqlite`
+### Advanced
 
-Additionnal scripts are available in [./src](./src)
+- execute `./src/create-full-sqlite.ts` to compile all data in `./commits.sqlite`
+- run `ollama create qwen2.5big -f ./qwen2.5big.Modelfile` to have a bigger context model
+- use the `LLM_MODEL` env variable to use a specific ollama model
+
+👉 Additionnal scripts are available in [./src](./src)
 
 ## Features
 
