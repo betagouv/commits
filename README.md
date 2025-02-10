@@ -4,7 +4,7 @@ Extract structured data from a GIT repositories with Ollama and combine multiple
 
 ![exemple SQLite](./examples/example.png)
 
-The sample [./commits.sqlite](./commits.sqlite) covers +700 repositories and +30k commits across +10 organisations.
+The sample [./commits.sqlite](./commits.sqlite) covers +700 repositories and +45k commits across +12 organisations.
 
 This could be used to generate changelogs, dig into project activities, mix'n'match projects and authors. see [./examples](./examples)
 
