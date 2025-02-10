@@ -1,6 +1,6 @@
 # commits
 
-Extract structured data from a GIT repositories with Ollama and combine multiple repos data in a single SQLite file.
+Extract structured data from GIT repositories with Ollama and combine multiple repos in a single SQLite file.
 
 ![exemple SQLite](./examples/example.png)
 
